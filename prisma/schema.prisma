@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([email])
+}
+
+enum SitePageKey {
+  HOME
+  ABOUT
+}
+
+model SiteContent {
+  id        String      @id @default(cuid())
+  pageKey   SitePageKey @unique
+  data      Json
+  published Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([published])
+}
+
+enum ProjectCategory {
+  EXPLORATION
+  MINING
+  PROCESSING
+  EXPORT
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  imageUrl    String
+  ctaText     String   @default("Request consultation")
+  ctaHref     String   @default("/contact")
+  order       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order])
+  @@index([published])
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  title       String
+  description String          @db.Text
+  category    ProjectCategory
+  imageUrl    String
+  order       Int             @default(0)
+  featured    Boolean         @default(false)
+  published   Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  gallery GalleryImage[]
+
+  @@index([category])
+  @@index([published, featured])
+}
+
+model GalleryImage {
+  id          String           @id @default(cuid())
+  title       String?
+  description String?          @db.Text
+  imageUrl    String
+  category    ProjectCategory?
+  projectId   String?
+  project     Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  order       Int              @default(0)
+  published   Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([category])
+  @@index([published])
+  @@index([order])
+}
+
+model ContactInfo {
+  id             String   @id @default("default")
+  heroTitle      String   @default("Contact M&F GOLD COMPANY (SL) LTD.")
+  heroSubtitle   String   @db.Text
+  email          String
+  phone          String
+  address        String   @db.Text
+  businessHours  String   @db.Text
+  mapPlaceholder String   @db.Text
+  ctaTitle       String   @default("Start a confidential conversation")
+  ctaBody        String   @db.Text
+  updatedAt      DateTime @updatedAt
+}
+
+model FooterContent {
+  id                 String   @id @default("default")
+  companyDescription String   @db.Text
+  socialTwitter      String?
+  socialLinkedin     String?
+  socialFacebook     String?
+  socialInstagram    String?
+  copyrightLine      String?
+  updatedAt          DateTime @updatedAt
+}
